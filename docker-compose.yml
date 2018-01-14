@@ -1,0 +1,10 @@
+version: '2'
+services:
+  neo4j:
+    build: ./docker/db/
+    ports:
+      - "7474:7474"
+  python:
+    build: .
+    links:
+      - neo4j

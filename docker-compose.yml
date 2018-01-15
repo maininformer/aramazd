@@ -8,3 +8,5 @@ services:
     build: .
     links:
       - neo4j
+    volumes:
+      - ".:/aramazd/"

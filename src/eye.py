@@ -1,8 +1,16 @@
-from PIL import Image
 import imagehash
+from PIL import Image
+from py2neo import Graph, Node, Relationship
+import redis
+
+graph = Graph("http://neo4j:password@neo4j:7474/db/data/")
+redis = redis.StrictRedis(host='redis', port=6379, db=0)
+
 hash = imagehash.whash(Image.open('./images/purple.jpg'))
 other_hash = imagehash.whash(Image.open('./images/yellow.jpg'))
 
-from py2neo import Graph, authenticate
+redis.set("purple", hash)
+image = Node("Visual", image_hash_redis_key="purple")
 
-graph = Graph("http://neo4j:pass@neo4j:7474/db/data/")
+print(redis.get("purple"))
+

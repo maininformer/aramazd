@@ -1,16 +1,41 @@
 import imagehash
 from PIL import Image
-from py2neo import Graph, Node, Relationship
-import redis
+from uuid import uuid4
 
-graph = Graph("http://neo4j:password@neo4j:7474/db/data/")
-redis = redis.StrictRedis(host='redis', port=6379, db=0)
+from brain import Brain
 
-hash = imagehash.whash(Image.open('./images/purple.jpg'))
-other_hash = imagehash.whash(Image.open('./images/yellow.jpg'))
+class Eye(Brain):
+    __init__(self):
+        super(Eye, self).__init__()
 
-redis.set("purple", hash)
-image = Node("Visual", image_hash_redis_key="purple")
+    def see(self, image_location):
+        name = uuid4()
+        # open the image and hash it
+        hash = imagehash.whash(self.__open(image_location))
+        # look up the image by hash and return similar ones
+        key_and_similarity = self.__lookup_by_hash(type_='Visual', hash=hash)
+        if len(key_and_similarity) > 0:
+            for key in key_and_similarity:
+                if key_and_similarity[key] == 0:
+                    # if it is the same do nothing
+                    continue
+                else:
+                    self.record(name, 'Visual', hash, image_location, neighbor=key, link=key_and_similarity[key])
+         else:
+             self.record(name, 'Visual', hash, image_location)
 
-print(redis.get("purple"))
+
+    def __lookup_by_hash(self, type_, hash):
+        def diff(this, another):
+            return abs(this-another)/len(another.hash)**2
+        key_and_similarity = []
+        results = self.lookup(type_)
+        for result in results:
+            key_and_similarity.append({
+                'key': result['key'],
+                'similarity': diff(hash, imagehash.hex_to_hash(result['value']))})
+         return key_and_similarity
+
+      def __open(self, image_location):
+          return Image.open(location)
 

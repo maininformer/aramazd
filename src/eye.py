@@ -5,7 +5,7 @@ from uuid import uuid4
 from brain import Brain
 
 class Eye(Brain):
-    __init__(self):
+    def __init__(self):
         super(Eye, self).__init__()
 
     def see(self, image_location):
@@ -15,27 +15,27 @@ class Eye(Brain):
         # look up the image by hash and return similar ones
         key_and_similarity = self.__lookup_by_hash(type_='Visual', hash=hash)
         if len(key_and_similarity) > 0:
-            for key in key_and_similarity:
-                if key_and_similarity[key] == 0:
+            for entry  in key_and_similarity:
+                if entry['similarity'] == 0:
                     # if it is the same do nothing
                     continue
                 else:
-                    self.record(name, 'Visual', hash, image_location, neighbor=key, link=key_and_similarity[key])
-         else:
-             self.record(name, 'Visual', hash, image_location)
+                    self.record(name, 'Visual', hash, image_location, neighbor=entry['key'], link=entry['similarity'])
+        else:
+            self.record(name, 'Visual', hash, image_location)
 
 
     def __lookup_by_hash(self, type_, hash):
         def diff(this, another):
             return abs(this-another)/len(another.hash)**2
         key_and_similarity = []
-        results = self.lookup(type_)
+        results = self.lookup_by(type_)
         for result in results:
             key_and_similarity.append({
                 'key': result['key'],
                 'similarity': diff(hash, imagehash.hex_to_hash(result['value']))})
-         return key_and_similarity
+        return key_and_similarity
 
-      def __open(self, image_location):
-          return Image.open(location)
+    def __open(self, image_location):
+        return Image.open(image_location)
 

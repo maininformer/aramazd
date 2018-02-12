@@ -20,7 +20,11 @@ class Eye(Brain):
                     # if it is the same do nothing
                     continue
                 else:
-                    self.record(name, 'Visual', hash, image_location, neighbor=entry['key'], link=entry['similarity'])
+                    # TODO: only associate similarities within a threshold
+                    # decode utf-8 cause redis returns byte string like b'Visual ...' and
+                    # that throws in querying neo4j
+                    found_neighbor = self.find_neighbor(('redis_key', entry['key'].decode('utf-8')))
+                    self.record(name, 'Visual', hash, image_location, neighbor=found_neighbor, link=entry['similarity'])
         else:
             self.record(name, 'Visual', hash, image_location)
 

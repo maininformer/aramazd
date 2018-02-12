@@ -31,6 +31,7 @@ class Brain(object):
         self.__tx.create(node)
         if neighbor:
             relationship = Relationship(node, "ASSOCIATED WITH", neighbor, strength=link)
+            self.__tx.create(relationship)
         self.__tx.commit()
 
     def lookup_by(self, type_):
@@ -38,4 +39,11 @@ class Brain(object):
         for key in self.__redis.scan_iter("{}*".format(type_)):
             results.append({'key': key, 'value': self.__redis.get(key)})
         return results
+
+    def find_neighbor(self, conditions):
+        command = """
+            MATCH (n) WHERE (n.{0}='{1}')
+            RETURN n;
+        """.format(conditions[0], conditions[1])
+        return self.__tx.run(command)
 

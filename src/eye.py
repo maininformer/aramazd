@@ -15,16 +15,25 @@ class Eye(Brain):
         # look up the image by hash and return similar ones
         key_and_similarity = self.__lookup_by_hash(type_='Visual', hash=hash)
         if len(key_and_similarity) > 0:
+            # two for loops because we need
+            # to make sure this is not a repeat node
+            # first, i.e. having yellow, purple while
+            # seeing purple again will create a duplicate
+            # yellow-purple, whilse purple, yellow will
+            # not, this two step for loop will prevent
+            # that
             for entry  in key_and_similarity:
                 if entry['similarity'] == 0:
-                    # if it is the same do nothing
-                    continue
-                else:
-                    # TODO: only associate similarities within a threshold
-                    # decode utf-8 cause redis returns byte string like b'Visual ...' and
-                    # that throws in querying neo4j
-                    found_neighbor = self.find_neighbor(('redis_key', entry['key'].decode('utf-8')))
-                    self.record(name, 'Visual', hash, image_location, neighbor=found_neighbor, link=entry['similarity'])
+                    # if it is the same, it is recorded
+                    # and associated before (this will be
+                    # dependent on the the precision of recognition
+                    return None
+            for entry in key_and_similarity:
+                # TODO: only associate similarities within a threshold
+                # decode utf-8 cause redis returns byte string like b'Visual ...' and
+                # that throws in querying neo4j
+                found_neighbor = self.find_neighbor(('redis_key', entry['key'].decode('utf-8')))
+                self.record(name, 'Visual', hash, image_location, neighbor=found_neighbor, link=entry['similarity'])
         else:
             self.record(name, 'Visual', hash, image_location)
 

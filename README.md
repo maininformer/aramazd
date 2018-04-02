@@ -1,3 +1,5 @@
+My rendition of the human brain.
+
 * `docker-compose up'
 * Visit localhost:7474; enter password: `neo4j` and change it to `password` when prompted
 * `docker-compose run python bash`
